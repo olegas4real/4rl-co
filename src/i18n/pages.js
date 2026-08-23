@@ -186,7 +186,7 @@ export const pages = {
       kicker: 'Código Aberto',
       h1: ['O código sai', 'com os seus <span class="serif">porquês</span><span class="slash">.</span>'],
       lede: 'A maior parte do trabalho do estúdio é empresa, e você vê o resultado. O trabalho desta página é diferente: o código, o schema e o registro de decisões são públicos, e qualquer pessoa pode ler, fazer fork ou rodar o seu.',
-      gumeTitle: 'Um diário de leituras que qualquer um pode <span class="hl">forkar</span><span class="slash">.</span>',
+      gumeTitle: 'Um diário de leituras que qualquer um pode <span class="hl">fazer fork</span><span class="slash">.</span>',
       gumeP1: 'O Gume é um diário de leituras, brasileiro e em português por escolha. Vai ser pago por apoiadores, e esse apoio é opcional e cosmético: um selo no perfil, nada mais. Pagar não desbloqueia nada, todo mundo lê o mesmo Gume. O código é AGPL-3.0, e qualquer pessoa pode pegá-lo e rodar o seu; essa saída é o ponto.',
       gumeP2: 'Ele é construído com quem usa. Corrija uma capa errada, abra uma issue, mande um pull request: o catálogo tem cerca de 300 mil edições em língua portuguesa, e melhora em público.',
       statNum: '~300 mil', statText: 'edições em língua portuguesa no catálogo',
@@ -200,9 +200,9 @@ export const pages = {
     },
     journalPosts: {
       'a-reading-log-you-can-fork': {
-        title: 'Um diário de leituras que você pode forkar',
+        title: 'Um diário de leituras que você pode fazer fork',
         dek: 'O Gume está aberto, no ar, e é construído por quem aparece. Notas de um publicitário que entregou um banco de dados.',
-        excerpt: 'A 4/RL abriu o código do Gume, um diário de leituras para leitores. O que a IA barateou foi o código. O que ela nunca barateou foi estar certo.',
+        excerpt: 'Abri o código do Gume, um diário de leituras para leitores. O que a IA barateou foi o código. O que ela nunca barateou foi estar certo.',
       },
       'the-tool-answered-back': {
         title: 'A ferramenta respondeu',
@@ -349,7 +349,7 @@ export const pages = {
       kicker: 'Código Abierto',
       h1: ['El código sale', 'con sus <span class="serif">porqués</span><span class="slash">.</span>'],
       lede: 'La mayor parte del trabajo del estudio son empresas, y ves el resultado. El trabajo de esta página es distinto: el código, el schema y el registro de decisiones son públicos, y cualquiera puede leerlos, hacer fork o montar el suyo.',
-      gumeTitle: 'Un diario de lecturas que cualquiera puede <span class="hl">forkear</span><span class="slash">.</span>',
+      gumeTitle: 'Un diario de lecturas que cualquiera puede <span class="hl">hacer fork</span><span class="slash">.</span>',
       gumeP1: 'Gume es un diario de lecturas, brasileño y en portugués por elección. Lo pagarán sus seguidores, y ese apoyo es opcional y cosmético: una insignia en el perfil, nada más. Pagar no desbloquea nada: todos leen el mismo Gume. El código es AGPL-3.0, y cualquiera puede tomarlo y montar el suyo; esa salida es el punto.',
       gumeP2: 'Se construye con quienes lo usan. Corrige una portada, abre un issue, envía un pull request: el catálogo tiene unas 300 mil ediciones en portugués, y mejora en público.',
       statNum: '~300 mil', statText: 'ediciones en portugués en el catálogo',
@@ -363,7 +363,7 @@ export const pages = {
     },
     journalPosts: {
       'a-reading-log-you-can-fork': {
-        title: 'Un diario de lecturas que puedes forkear',
+        title: 'Un diario de lecturas que puedes hacer fork',
         dek: 'Gume está abierto, en vivo, y lo construye quien aparece. Notas de un publicista que entregó una base de datos.',
         excerpt: '4/RL abrió el código de Gume, un diario de lecturas para lectores. Lo que la IA abarató fue el código. Lo que nunca abarató fue tener razón.',
       },

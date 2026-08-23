@@ -5,6 +5,7 @@
 // folders and opens them. Locale- and theme-aware; Apple system colours.
 import { getLocale } from '../i18n/index.js';
 import { getMeDict } from '../i18n/me.js';
+import { getPages } from '../i18n/pages.js';
 import { projects } from '../data/projects.js';
 import { articles } from '../data/journal.js';
 import SocialIcons from './SocialIcons.astro';
@@ -14,7 +15,15 @@ import Mark from './Mark.astro';
 const locale = getLocale(Astro);
 const t = getMeDict(locale);
 const projMap = Object.fromEntries(projects.map((p) => [p.id, p]));
-const writing = articles.filter((a) => a.slug === 'a-reading-log-you-can-fork');
+const P = getPages(locale);
+// Localized title/dek for the article card (English journalPosts is empty, so
+// EN correctly falls back to the article's native English fields).
+const writing = articles
+  .filter((a) => a.slug === 'a-reading-log-you-can-fork')
+  .map((a) => {
+    const jp = P.journalPosts?.[a.slug] ?? {};
+    return { slug: a.slug, dateLabel: a.dateLabel, title: jp.title ?? a.title, dek: jp.dek ?? a.dek };
+  });
 
 // Apple system colours, one per folder.
 const folders = [
@@ -107,7 +116,7 @@ const detailBase = locale === 'pt' ? '' : '/' + locale;
 
         <section class="panel" data-panel="escrita" hidden>
           {writing.map((a) => (
-            <a class="p-essay" href={`/journal/${a.slug}`}>
+            <a class="p-essay" href={`${detailBase}/journal/${a.slug}`}>
               <span class="row__tag">{a.dateLabel}</span>
               <h3 class="p-name">{a.title}</h3>
               <p class="p-desc">{a.dek}</p>
