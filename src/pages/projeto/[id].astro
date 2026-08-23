@@ -1,0 +1,99 @@
+---
+// Detailed project page (root = PT). Reached from a folder window's green
+// "zoom" button. Same aesthetic as the desktop: Me layout, --me-* tokens, the
+// project's own colour as an accent. Localized copies live under [lang]/.
+import Me from '../../layouts/Me.astro';
+import { getLocale, homePath } from '../../i18n/index.js';
+import { getMeDict } from '../../i18n/me.js';
+import { projects } from '../../data/projects.js';
+import FolderIcon from '../../components/FolderIcon.astro';
+import { projectMeta as META } from '../../data/projectMeta.js';
+
+export function getStaticPaths() {
+  return Object.keys(META).map((id) => ({ params: { id }, props: { id } }));
+}
+
+const { id } = Astro.props;
+const locale = getLocale(Astro);
+const t = getMeDict(locale);
+const p = projects.find((x) => x.id === id);
+const c = t.projects[id] ?? {};
+const m = META[id];
+const paras = c.long ?? (c.desc ? [c.desc] : []);
+const detailBase = locale === 'pt' ? '' : '/' + locale;
+const others = ['smart-social', 'gume', 'labepi', 'altman']
+  .filter((x) => x !== id)
+  .map((x) => ({ id: x, name: projects.find((pr) => pr.id === x)?.name }));
+---
+<Me pageTitle={`${p.name} · Gabriel Olegário`} pageDesc={c.line}>
+  <article class="pp">
+    <a class="pp__back" href={homePath(locale)}><span aria-hidden="true">←</span> Gabriel Olegário</a>
+
+    <header class="pp__hero" style={`--c:${m.color}`}>
+      <span class="pp__ico"><FolderIcon color={m.color} icon={m.icon} uid={`pp-${id}`} star={false} /></span>
+      <div class="pp__head">
+        <h1 class="pp__name">{p.name}</h1>
+        {c.tag && <p class="pp__tag">{c.tag}</p>}
+      </div>
+    </header>
+
+    <div class="pp__body">
+      {c.line && <p class="pp__lead">{c.line}</p>}
+      {paras.map((x) => (<p class="pp__p">{x}</p>))}
+
+      {c.facts && (
+        <ul class="pp__facts">
+          {c.facts.map((f) => (<li>{f}</li>))}
+        </ul>
+      )}
+
+      {p.links.length > 0 && (
+        <div class="pp__links">
+          {p.links.map((l) => (
+            <a class="pp__link" href={l.href} target="_blank" rel="noopener">{l.label} <span aria-hidden="true">↗</span></a>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <nav class="pp__more" aria-label="Other projects">
+      {others.map((o) => (
+        <a class="pp__more-link" href={`${detailBase}/projeto/${o.id}`}>{o.name} <span aria-hidden="true">→</span></a>
+      ))}
+    </nav>
+  </article>
+</Me>
+
+<style>
+  .pp{ max-width:760px; margin:0 auto; padding:calc(46px + clamp(28px,6vh,64px)) clamp(20px,5vw,32px) 100px; }
+
+  .pp__back{
+    display:inline-block; margin-bottom:clamp(24px,5vh,44px);
+    font-family:var(--font-ui); font-size:13px; font-weight:600; color:var(--me-muted);
+  }
+  .pp__back:hover{ color:var(--me-ink-strong); }
+
+  .pp__hero{ display:flex; align-items:center; gap:20px; }
+  .pp__ico{ width:96px; aspect-ratio:100/82; flex:0 0 auto; filter:drop-shadow(0 12px 22px color-mix(in srgb, var(--c) 40%, transparent)); }
+  .pp__name{ font-family:var(--font-ui); font-size:clamp(30px,5vw,44px); font-weight:700; letter-spacing:-.02em; color:var(--me-ink-strong); line-height:1.02; }
+  .pp__tag{ margin-top:6px; font-family:var(--font-ui); font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; color:var(--c); }
+
+  .pp__body{ margin-top:clamp(28px,5vh,44px); }
+  .pp__lead{ font-size:clamp(18px,2.4vw,22px); line-height:1.5; color:var(--me-ink-strong); font-weight:500; }
+  .pp__p{ margin-top:18px; font-size:16.5px; line-height:1.72; color:var(--me-ink); }
+
+  .pp__facts{ list-style:none; margin-top:28px; display:grid; gap:12px; padding:22px; background:var(--me-card); border:1px solid var(--me-line); border-radius:14px; }
+  .pp__facts li{ position:relative; padding-left:24px; font-size:15px; line-height:1.5; color:var(--me-muted); }
+  .pp__facts li::before{ content:''; position:absolute; left:4px; top:7px; width:7px; height:7px; border-radius:50%; background:var(--c); }
+
+  .pp__links{ display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
+  .pp__link{
+    font-family:var(--font-ui); font-size:14px; font-weight:600; color:#fff; background:var(--c);
+    padding:10px 16px; border-radius:10px;
+  }
+  .pp__link:hover{ filter:brightness(1.06); }
+
+  .pp__more{ display:flex; flex-wrap:wrap; gap:22px; margin-top:56px; padding-top:24px; border-top:1px solid var(--me-line); }
+  .pp__more-link{ font-family:var(--font-ui); font-size:15px; font-weight:600; color:var(--me-muted); }
+  .pp__more-link:hover{ color:var(--me-ink-strong); }
+</style>

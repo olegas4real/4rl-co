@@ -1,0 +1,442 @@
+---
+// Gabriel's home as a full-screen desktop of folders (macOS-flavoured). Each
+// folder morphs into a window on click (FLIP via the Web Animations API — no
+// libs). A Spotlight-style search (⌘K / the menubar field / "/") filters the
+// folders and opens them. Locale- and theme-aware; Apple system colours.
+import { getLocale } from '../i18n/index.js';
+import { getMeDict } from '../i18n/me.js';
+import { projects } from '../data/projects.js';
+import { articles } from '../data/journal.js';
+import SocialIcons from './SocialIcons.astro';
+import FolderIcon from './FolderIcon.astro';
+import Mark from './Mark.astro';
+
+const locale = getLocale(Astro);
+const t = getMeDict(locale);
+const projMap = Object.fromEntries(projects.map((p) => [p.id, p]));
+const writing = articles.filter((a) => a.slug === 'a-reading-log-you-can-fork');
+
+// Apple system colours, one per folder.
+const folders = [
+  { id: 'sobre', color: '#007AFF', icon: 'person', name: t.folders.sobre.name, sub: t.folders.sobre.sub },
+  { id: 'smart-social', color: '#AF52DE', icon: 'signal', name: 'Smart Social', sub: t.projects['smart-social'].tag },
+  { id: 'gume', color: '#34C759', icon: 'book', name: 'Gume', sub: t.projects.gume.tag },
+  { id: 'labepi', color: '#30B0C7', icon: 'flask', name: 'LabEpi', sub: t.projects.labepi.tag },
+  { id: 'altman', color: '#FF9500', icon: 'chart', name: 'Altman by LabEpi', sub: t.projects.altman.tag },
+  { id: 'escrita', color: '#FFCC00', icon: 'pen', name: t.folders.escrita.name, sub: t.folders.escrita.sub },
+  { id: 'contato', color: '#FF2D55', icon: 'mail', name: t.folders.contato.name, sub: t.folders.contato.sub },
+];
+const projIds = ['smart-social', 'gume', 'labepi', 'altman'];
+const detailBase = locale === 'pt' ? '' : '/' + locale;
+---
+<main class="desk">
+  <div class="desk__stage">
+    <ul class="grid">
+      {folders.map((f, i) => (
+        <li class="reveal" style={`--d:${i}`}>
+          <button class="cell" type="button" data-win={f.id} data-title={f.name} data-color={f.color} data-detail={projIds.includes(f.id) ? `${detailBase}/projeto/${f.id}` : undefined} aria-label={f.name}>
+            <span class="cell__ico">
+              <FolderIcon color={f.color} icon={f.icon} uid={f.id} />
+            </span>
+            <span class="cell__name">{f.name}</span>
+            <span class="cell__sub">{f.sub}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <footer class="desk__foot reveal">
+    <span>{t.footerLoc}</span>
+    <span class="desk__hint">{t.ui.hint}</span>
+    <span class="desk__slash" aria-hidden="true">/</span>
+  </footer>
+
+  {/* ---- the morphing window ---- */}
+  <div class="stage" id="stage" hidden>
+    <div class="stage__bg" id="stageBg"></div>
+    <div class="window" id="window" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+      <div class="window__bar">
+        <span class="tl tl--close" id="winClose" role="button" tabindex="0" aria-label={t.closeLabel} title={t.closeLabel}></span>
+        <span class="tl tl--min" role="button" aria-label={t.closeLabel} title={t.closeLabel}></span>
+        <span class="tl tl--max" id="winZoom" role="button" aria-label={t.ui.zoom} title={t.ui.zoom}></span>
+        <span class="window__title" id="winTitle"></span>
+        <span class="window__hint" id="winHint">{t.ui.zoom} →</span>
+      </div>
+      <div class="window__body" id="winBody">
+        <section class="panel" data-panel="sobre" hidden>
+          <div class="p-id">
+            <span class="p-mark"><Mark size={64} radius={16} /></span>
+            <div>
+              <h3 class="p-name">Gabriel Olegário</h3>
+              <p class="p-role">{t.role}</p>
+            </div>
+          </div>
+          {t.about.map((para) => (<p class="p-about">{para}</p>))}
+          <a class="p-cta" href="https://www.linkedin.com/in/olegas4real/" target="_blank" rel="noopener">LinkedIn <span aria-hidden="true">↗</span></a>
+        </section>
+
+        {projIds.map((id) => {
+          const p = projMap[id];
+          const c = t.projects[id] ?? {};
+          return (
+            <section class="panel" data-panel={id} hidden>
+              <div class="p-proj">
+                <span class="p-proj__ico" aria-hidden="true">{p.icon}</span>
+                <div>
+                  <h3 class="p-name">{p.name}</h3>
+                  {c.tag && <span class="row__tag">{c.tag}</span>}
+                </div>
+              </div>
+              <p class="p-desc">{c.desc}</p>
+              {c.facts && (
+                <ul class="p-facts">
+                  {c.facts.map((f) => (<li>{f}</li>))}
+                </ul>
+              )}
+              {p.links.length > 0 && (
+                <div class="p-links">
+                  {p.links.map((l) => (
+                    <a class="p-link" href={l.href} target="_blank" rel="noopener">{l.label} <span aria-hidden="true">↗</span></a>
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })}
+
+        <section class="panel" data-panel="escrita" hidden>
+          {writing.map((a) => (
+            <a class="p-essay" href={`/journal/${a.slug}`}>
+              <span class="row__tag">{a.dateLabel}</span>
+              <h3 class="p-name">{a.title}</h3>
+              <p class="p-desc">{a.dek}</p>
+            </a>
+          ))}
+        </section>
+
+        <section class="panel" data-panel="contato" hidden>
+          <SocialIcons />
+        </section>
+      </div>
+    </div>
+  </div>
+
+  {/* ---- Spotlight ---- */}
+  <div class="spot" id="spot" hidden>
+    <div class="spot__bg" id="spotBg"></div>
+    <div class="spot__panel" role="dialog" aria-modal="true" aria-label={t.ui.search}>
+      <div class="spot__field">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M11 4a7 7 0 1 0 4.2 12.6l4.1 4.1 1.4-1.4-4.1-4.1A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/></svg>
+        <input id="spotInput" type="text" placeholder={t.ui.searchHint} autocomplete="off" spellcheck="false" aria-label={t.ui.search} />
+      </div>
+      <ul class="spot__list" id="spotList"></ul>
+      <p class="spot__empty" id="spotEmpty" hidden>{t.ui.noResults}</p>
+    </div>
+  </div>
+</main>
+
+<style>
+  .desk{ min-height:100svh; display:flex; flex-direction:column; padding-top:46px; }
+  .desk__stage{
+    flex:1; display:flex; align-items:center; justify-content:center;
+    padding:clamp(28px,6vh,72px) clamp(18px,5vw,64px);
+    background:linear-gradient(180deg, color-mix(in srgb, var(--me-ink-strong) 3%, var(--me-bg)), var(--me-bg));
+  }
+
+  .grid{
+    list-style:none; display:flex; flex-wrap:wrap; justify-content:center; align-content:center;
+    gap:clamp(10px,1.6vw,26px); max-width:940px;
+  }
+  .grid li{ flex:0 0 clamp(132px,15vw,172px); }
+
+  .cell{
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    width:100%; padding:14px 8px 16px; border-radius:16px; cursor:pointer;
+    background:transparent; border:1px solid transparent; text-align:center;
+    transition:background .18s ease, border-color .18s ease;
+  }
+  .cell:hover{ background:var(--me-hover); border-color:var(--me-line); }
+  .cell:focus-visible{ outline:2px solid var(--me-accent); outline-offset:2px; }
+  .cell__ico{
+    width:clamp(100px,12vw,134px); aspect-ratio:100/82; display:block;
+    filter:drop-shadow(0 10px 16px rgba(0,0,0,.18));
+    transition:transform .28s cubic-bezier(.22,1,.36,1);
+  }
+  .cell:hover .cell__ico{ transform:translateY(-4px); }
+  .cell:hover :global(.fld__flap){ transform:perspective(320px) rotateX(-16deg); }
+  .cell__name{ margin-top:10px; font-family:var(--font-ui); font-size:14px; font-weight:600; color:var(--me-ink-strong); line-height:1.2; }
+  .cell__sub{ font-family:var(--font-ui); font-size:11px; color:var(--me-faint); line-height:1.3; max-width:18ch; }
+
+  /* ---- window ---- */
+  .stage{ position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .stage[hidden]{ display:none; }
+  .stage__bg{ position:absolute; inset:0; background:rgba(10,10,12,.5); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+
+  .window{
+    position:relative; z-index:1; width:min(640px,100%); max-height:86svh;
+    display:flex; flex-direction:column; overflow:hidden;
+    background:var(--me-bg); border:1px solid var(--me-line-strong);
+    border-radius:16px; box-shadow:0 40px 100px rgba(0,0,0,.4); will-change:transform, opacity;
+  }
+  .window__bar{
+    display:flex; align-items:center; gap:8px; flex:0 0 auto;
+    padding:0 16px; height:44px; border-bottom:1px solid var(--me-line); background:var(--me-card);
+  }
+  .tl{ position:relative; width:12px; height:12px; border-radius:50%; display:inline-block; }
+  .tl::after{ position:absolute; inset:0; display:grid; place-items:center; font-size:9px; font-weight:800; line-height:1; color:rgba(0,0,0,.55); opacity:0; transition:opacity .15s ease; }
+  .tl--close{ background:#ff5f57; cursor:pointer; }
+  .tl--min{ background:#febc2e; cursor:pointer; }
+  .tl--max{ background:#28c840; }
+  .tl--close::after{ content:'×'; }
+  .tl--min::after{ content:'×'; }
+  .window__bar:hover .tl--close::after,
+  .window__bar:hover .tl--min::after{ opacity:1; }
+  .tl:hover{ filter:brightness(.92); }
+  /* green is live only when the open window has a detail page */
+  .window.has-detail .tl--max{ cursor:pointer; }
+  .window.has-detail .tl--max::after{ content:'⤢'; }
+  .window.has-detail .window__bar:hover .tl--max::after{ opacity:1; }
+  .window__title{ margin-left:6px; font-family:var(--font-ui); font-size:13px; font-weight:600; color:var(--me-muted); }
+  .window__hint{ margin-left:auto; font-family:var(--font-ui); font-size:12px; color:var(--me-faint); opacity:0; transition:opacity .2s ease; white-space:nowrap; }
+  .window.has-detail .window__hint{ opacity:1; }
+
+  .window__body{ overflow-y:auto; padding:clamp(24px,4vw,36px); }
+  .panel[hidden]{ display:none; }
+
+  .p-id{ display:flex; align-items:center; gap:16px; margin-bottom:22px; }
+  .p-mark{ display:block; width:64px; height:64px; }
+  .p-name{ font-family:var(--font-ui); font-size:24px; font-weight:700; letter-spacing:-.02em; color:var(--me-ink-strong); line-height:1.05; }
+  .p-role{ margin-top:3px; font-size:14px; font-weight:600; color:var(--me-muted); }
+  .p-about{ font-size:15.5px; line-height:1.68; color:var(--me-ink); }
+  .p-about + .p-about{ margin-top:14px; }
+  .p-cta{
+    display:inline-block; margin-top:22px; font-family:var(--font-ui); font-size:14px; font-weight:600;
+    color:#fff; background:var(--me-accent); padding:9px 16px; border-radius:9px;
+  }
+  .p-cta:hover{ filter:brightness(1.06); }
+
+  .p-proj{ display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .p-proj__ico{ width:48px; height:48px; border-radius:12px; background:var(--me-card); display:grid; place-items:center; font-size:24px; }
+  .p-desc{ font-size:16px; line-height:1.68; color:var(--me-ink); }
+  .p-facts{ list-style:none; margin-top:18px; display:grid; gap:10px; }
+  .p-facts li{ position:relative; padding-left:24px; font-size:14.5px; line-height:1.5; color:var(--me-muted); }
+  .p-facts li::before{ content:''; position:absolute; left:6px; top:8px; width:6px; height:6px; border-radius:50%; background:var(--me-accent); }
+  .p-links{ display:flex; flex-wrap:wrap; gap:18px; margin-top:22px; padding-top:18px; border-top:1px solid var(--me-line); }
+  .p-link{ font-family:var(--font-ui); font-size:13px; color:var(--me-ink); border-bottom:1px solid var(--me-line-strong); padding-bottom:2px; }
+  .p-link:hover{ border-color:var(--me-ink-strong); color:var(--me-ink-strong); }
+  .row__tag{ font-family:var(--font-ui); font-size:11px; letter-spacing:.03em; text-transform:uppercase; color:var(--me-faint); }
+
+  .p-essay{ display:block; }
+  .p-essay .p-name{ margin-top:6px; font-size:22px; }
+  .p-essay:hover .p-name{ color:var(--me-accent); }
+  .p-essay .p-desc{ margin-top:8px; font-size:15px; color:var(--me-muted); }
+
+  .desk__foot{
+    padding:18px clamp(18px,5vw,64px) 32px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:var(--font-ui); font-size:12px; color:var(--me-faint);
+  }
+  .desk__hint{ color:var(--me-faint); text-align:center; }
+  .desk__slash{ color:var(--me-accent); font-weight:700; font-size:18px; }
+  @media (max-width:640px){ .desk__hint{ display:none; } }
+
+  /* ---- Spotlight ---- */
+  .spot{ position:fixed; inset:0; z-index:120; display:flex; align-items:flex-start; justify-content:center; padding:14vh 20px 20px; }
+  .spot[hidden]{ display:none; }
+  .spot__bg{ position:absolute; inset:0; background:rgba(10,10,12,.34); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
+  .spot__panel{
+    position:relative; z-index:1; width:min(580px,100%);
+    background:color-mix(in srgb, var(--me-bg) 88%, transparent);
+    -webkit-backdrop-filter:saturate(1.8) blur(30px); backdrop-filter:saturate(1.8) blur(30px);
+    border:1px solid var(--me-line-strong); border-radius:16px;
+    box-shadow:0 30px 80px rgba(0,0,0,.4); overflow:hidden;
+  }
+  .spot__field{ display:flex; align-items:center; gap:12px; padding:16px 18px; border-bottom:1px solid var(--me-line); }
+  .spot__field svg{ fill:var(--me-faint); flex:0 0 auto; }
+  .spot__field input{
+    flex:1; border:0; background:transparent; outline:none;
+    font-family:var(--font-ui); font-size:20px; color:var(--me-ink-strong);
+  }
+  .spot__field input::placeholder{ color:var(--me-faint); }
+  .spot__list{ list-style:none; max-height:min(48vh,360px); overflow-y:auto; padding:8px; }
+  /* rows are created in JS (document.createElement), so Astro's scoped class
+     attribute never lands on them — style them :global, fenced under the list. */
+  .spot__list :global(.spot__row){
+    display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer;
+  }
+  .spot__list :global(.spot__row[aria-selected="true"]){ background:var(--me-accent); }
+  .spot__list :global(.spot__row[aria-selected="true"] .spot__name){ color:#fff; }
+  .spot__list :global(.spot__row[aria-selected="true"] .spot__sub){ color:rgba(255,255,255,.82); }
+  .spot__list :global(.spot__dot){ width:12px; height:12px; border-radius:4px; flex:0 0 auto; }
+  .spot__list :global(.spot__name){ font-family:var(--font-ui); font-size:15px; font-weight:600; color:var(--me-ink-strong); }
+  .spot__list :global(.spot__sub){ font-family:var(--font-ui); font-size:12px; color:var(--me-faint); margin-left:auto; }
+  .spot__empty{ padding:18px; text-align:center; color:var(--me-faint); font-size:14px; }
+  .spot__empty[hidden]{ display:none; }
+
+  .reveal{ opacity:0; transform:translateY(10px); transition:opacity .5s ease, transform .5s ease; transition-delay:calc(var(--d,0) * .04s); }
+  .reveal.in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){ .reveal{ opacity:1; transform:none; transition:none; } }
+
+  @media (max-width:560px){
+    .window{ max-height:92svh; }
+    .cell__sub{ display:none; }
+  }
+</style>
+
+<script>
+  const stage = document.getElementById('stage');
+  const win = document.getElementById('window');
+  const bg = document.getElementById('stageBg');
+  const title = document.getElementById('winTitle');
+  const panels = Array.from(document.querySelectorAll('.panel'));
+  const cells = Array.from(document.querySelectorAll('.cell'));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let lastFolder = null;
+  let animating = false;
+
+  const rectOf = (el) => el.getBoundingClientRect();
+
+  function morph(fromRect, toRect) {
+    const dx = (fromRect.left + fromRect.width / 2) - (toRect.left + toRect.width / 2);
+    const dy = (fromRect.top + fromRect.height / 2) - (toRect.top + toRect.height / 2);
+    const sx = Math.max(fromRect.width / toRect.width, 0.05);
+    const sy = Math.max(fromRect.height / toRect.height, 0.05);
+    return `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+  }
+
+  function open(id, folderEl) {
+    if (animating) return;
+    lastFolder = folderEl;
+    title.textContent = folderEl.getAttribute('data-title') || '';
+    win.classList.toggle('has-detail', Boolean(folderEl.getAttribute('data-detail')));
+    panels.forEach((p) => { p.hidden = p.dataset.panel !== id; });
+    stage.hidden = false;
+    document.body.style.overflow = 'hidden';
+    const wb = win.querySelector('.window__body');
+    if (wb) wb.scrollTop = 0;
+
+    if (reduce) { win.style.transform = 'none'; win.style.opacity = '1'; bg.style.opacity = '1'; return; }
+
+    const fr = rectOf(folderEl.querySelector('.cell__ico') || folderEl);
+    const wr = rectOf(win);
+    animating = true;
+    bg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: 'ease', fill: 'both' });
+    const a = win.animate(
+      [{ transform: morph(fr, wr), opacity: 0.3 }, { transform: 'none', opacity: 1 }],
+      { duration: 440, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' }
+    );
+    a.onfinish = () => { animating = false; };
+  }
+
+  function close() {
+    if (!lastFolder || reduce) { stage.hidden = true; document.body.style.overflow = ''; return; }
+    if (animating) return;
+    const fr = rectOf(lastFolder.querySelector('.cell__ico') || lastFolder);
+    const wr = rectOf(win);
+    animating = true;
+    bg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease', fill: 'both' });
+    const a = win.animate(
+      [{ transform: 'none', opacity: 1 }, { transform: morph(fr, wr), opacity: 0.2 }],
+      { duration: 320, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'both' }
+    );
+    a.onfinish = () => {
+      animating = false; stage.hidden = true; document.body.style.overflow = '';
+      win.style.transform = ''; win.style.opacity = '';
+    };
+  }
+
+  cells.forEach((btn) => btn.addEventListener('click', () => open(btn.getAttribute('data-win'), btn)));
+  document.getElementById('winClose')?.addEventListener('click', close);
+  document.getElementById('winClose')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); close(); }
+  });
+  // yellow (minimize) also closes the window, per the owner's call
+  document.querySelector('.tl--min')?.addEventListener('click', close);
+  // green (zoom) goes to the project's detailed page when there is one
+  document.querySelector('.tl--max')?.addEventListener('click', () => {
+    const href = lastFolder?.getAttribute('data-detail');
+    if (href) window.location.href = href;
+  });
+  bg?.addEventListener('click', close);
+
+  /* ---- Spotlight ---- */
+  const spot = document.getElementById('spot');
+  const spotBg = document.getElementById('spotBg');
+  const spotInput = document.getElementById('spotInput');
+  const spotList = document.getElementById('spotList');
+  const spotEmpty = document.getElementById('spotEmpty');
+  const catalog = cells.map((c) => ({
+    id: c.getAttribute('data-win'),
+    name: c.querySelector('.cell__name')?.textContent || '',
+    sub: c.querySelector('.cell__sub')?.textContent || '',
+    color: c.getAttribute('data-color') || 'var(--me-accent)',
+    el: c,
+  }));
+  let results = [];
+  let sel = 0;
+
+  function renderSpot(q) {
+    const query = q.trim().toLowerCase();
+    results = query
+      ? catalog.filter((i) => (i.name + ' ' + i.sub).toLowerCase().includes(query))
+      : catalog.slice();
+    sel = 0;
+    spotList.innerHTML = '';
+    spotEmpty.hidden = results.length > 0;
+    results.forEach((r, i) => {
+      const li = document.createElement('li');
+      li.className = 'spot__row';
+      li.setAttribute('role', 'option');
+      li.setAttribute('aria-selected', i === sel ? 'true' : 'false');
+      li.innerHTML = `<span class="spot__dot" style="background:${r.color}"></span><span class="spot__name"></span><span class="spot__sub"></span>`;
+      li.querySelector('.spot__name').textContent = r.name;
+      li.querySelector('.spot__sub').textContent = r.sub;
+      li.addEventListener('click', () => choose(i));
+      li.addEventListener('mousemove', () => setSel(i));
+      spotList.appendChild(li);
+    });
+  }
+  function setSel(i) {
+    sel = i;
+    Array.from(spotList.children).forEach((el, idx) => el.setAttribute('aria-selected', idx === sel ? 'true' : 'false'));
+    spotList.children[sel]?.scrollIntoView({ block: 'nearest' });
+  }
+  function choose(i) {
+    const r = results[i];
+    if (!r) return;
+    closeSpot();
+    open(r.id, r.el);
+  }
+  function openSpot() {
+    if (!stage.hidden) close();
+    spot.hidden = false;
+    document.body.style.overflow = 'hidden';
+    spotInput.value = '';
+    renderSpot('');
+    setTimeout(() => spotInput.focus(), 20);
+  }
+  function closeSpot() {
+    spot.hidden = true;
+    if (stage.hidden) document.body.style.overflow = '';
+  }
+  spotInput?.addEventListener('input', (e) => renderSpot(e.target.value));
+  spotInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setSel(Math.min(sel + 1, results.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setSel(Math.max(sel - 1, 0)); }
+    else if (e.key === 'Enter') { e.preventDefault(); choose(sel); }
+  });
+  spotBg?.addEventListener('click', closeSpot);
+  document.addEventListener('spotlight:open', openSpot);
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openSpot(); return; }
+    if (e.key === '/' && spot.hidden && stage.hidden && !/^(input|textarea)$/i.test(document.activeElement?.tagName || '')) {
+      e.preventDefault(); openSpot(); return;
+    }
+    if (e.key === 'Escape') {
+      if (!spot.hidden) closeSpot();
+      else if (!stage.hidden) close();
+    }
+  });
+</script>

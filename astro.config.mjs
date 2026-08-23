@@ -11,12 +11,12 @@ export default defineConfig({
   site: SITE_URL,
   compressHTML: true,
   build: { inlineStylesheets: 'always' },
-  // A language is a URL: English (the canonical voice) at the root, four
-  // localized homes under their prefixes. Components self-localize from
+  // A language is a URL: Portuguese (the owner's voice) at the root, four
+  // localized versions under their prefixes. Components self-localize from
   // Astro.currentLocale; dictionaries live in src/i18n/.
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en', 'pt', 'es', 'zh', 'ru'],
+    defaultLocale: 'pt',
+    locales: ['pt', 'en', 'es', 'zh', 'ru'],
     routing: { prefixDefaultLocale: false },
   },
   // The project lives under "01. 4:RL Co." — spaces and a colon in the path.

@@ -6,7 +6,7 @@ import Page from '../../journal/[slug].astro';
 import { articles } from '../../../data/journal.js';
 
 export function getStaticPaths() {
-  return ['pt', 'es', 'zh', 'ru'].flatMap((lang) =>
+  return ['en', 'es', 'zh', 'ru'].flatMap((lang) =>
     articles.map((a) => ({ params: { lang, slug: a.slug }, props: { article: a } }))
   );
 }

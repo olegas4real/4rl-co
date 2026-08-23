@@ -26,12 +26,12 @@ export const LOCALE_META = {
   ru: { code: 'RU', name: 'Русский', og: 'ru_RU', dir: 'ltr' },
 };
 
-export const homePath = (l) => (l === 'en' ? '/' : `/${l}/`);
+export const homePath = (l) => (l === 'pt' ? '/' : `/${l}/`);
 
 // Every component self-localizes from the route: Astro.currentLocale is set
-// by the i18n router on /pt/ etc. and undefined on non-localized pages,
-// where English is the answer.
-export const getLocale = (Astro) => Astro.currentLocale ?? 'en';
+// by the i18n router on /en/ etc. and resolves to the default (pt) on the
+// non-prefixed root.
+export const getLocale = (Astro) => Astro.currentLocale ?? 'pt';
 export const getDict = (l) => dict[l] ?? dict.en;
 
 export const dict = {

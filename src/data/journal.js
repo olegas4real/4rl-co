@@ -1,4 +1,4 @@
-// Native journal for 4/RL. Articles are written natively here.
+// Native journal for Gabriel Olegário. Articles are written natively here.
 // Block types rendered by /journal/[slug]:
 //   { t:'p', html, drop? }        paragraph (drop=true -> drop cap)
 //   { t:'h2', html, id? }         section heading
@@ -23,7 +23,7 @@ export const articles = [
     // section heading it always was, which is where an essay's thesis belongs.
     dek: 'Gume is open, live, and built by whoever shows up. Notes from an advertiser who shipped a database.',
     excerpt:
-      '4/RL open sourced Gume, a reading log for readers. What AI made cheap was the code. What it never made cheap was being right.',
+      'I open sourced Gume, a reading log for readers. What AI made cheap was the code. What it never made cheap was being right.',
     author: 'Gabriel Olegário',
     date: '2026-07-16',
     dateLabel: 'Jul 2026',
@@ -114,7 +114,7 @@ export const articles = [
 
       { t: 'h2', id: 'what-i-want', html: `What I want out of it` },
       { t: 'p', html: `I'll be direct, because pretending this is pure altruism would be its own kind of theatre.` },
-      { t: 'p', html: `I run a studio that puts AI to work across influence, science, applied AI and film. I sell judgment about AI. You cannot sell judgment about a thing you have only briefed other people to do.` },
+      { t: 'p', html: `I build and operate companies that put AI to work across influence, science and applied AI. I sell judgment about AI. You cannot sell judgment about a thing you have only briefed other people to do.` },
       { t: 'p', html: `So I built the whole vertical myself, badly at first, and in public. Schema design. Authorization. A trigram search over 300,000 rows and why it was slow (I guessed debounce; I was wrong; the agent measured and it was an external call blocking the keystroke). Postgres migrations. CSP headers. CI. A design system. Community governance. Licence choice. Deploy.` },
       { t: 'p', html: `The shape people call T-shaped only works if the vertical is real. Mine is advertising, positioning, taste, the read on a screen. What I was missing was the horizontal that this decade actually requires: enough fluency in the machinery to know when the machine is confidently lying to me, and enough taste in the process to structure the work so that the lie gets caught by something other than luck.` },
       { t: 'pull', html: `You do not learn that from a course about AI. You learn it at 2am when the substring filter is about to delete Jung.` },
@@ -161,43 +161,16 @@ export const articles = [
 
       { t: 'divider' },
 
-      { t: 'h2', id: 'why-4rl', html: `Why this is a 4<span class="slash">/</span>RL venture` },
+      { t: 'h2', id: 'why-open', html: `Why I keep it open` },
       { t: 'p', html: `Gume makes no money and is not trying to. One day there will be a way to support it, and it will be optional and <strong>cosmetic</strong>: a mark on your profile, nothing more. Support never unlocks a feature. The person who pays and the person who doesn't use exactly the same Gume.` },
-      { t: 'p', html: `So why does a studio ship it?` },
-      { t: 'p', html: `Because <span class="hl">"for real"</span> is a standard, and the slash in our name is the line every project has to cross, from promise to proof. <strong>Open source is the harshest version of that crossing there is.</strong> You cannot claim it works when anyone can clone it and find out in two commands. You cannot claim you understand the stack when the stack is on the table. You cannot claim the product has principles when the licence hands a stranger the power to fork you the day you break one.` },
-      { t: 'p', html: `Everything else we build passes through a client, a contract, an NDA. This one passes through you.` },
+      { t: 'p', html: `So why do I keep shipping it?` },
+      { t: 'p', html: `Because <span class="hl">"for real"</span> is the standard I hold myself to: the line every project has to cross, from promise to proof. <strong>Open source is the harshest version of that crossing there is.</strong> You cannot claim it works when anyone can clone it and find out in two commands. You cannot claim you understand the stack when the stack is on the table. You cannot claim the product has principles when the licence hands a stranger the power to fork you the day you break one.` },
+      { t: 'p', html: `Everything else I build passes through a client, a contract, an NDA. This one passes through you.` },
       { t: 'p', html: `Gume is the name for the edge of a blade. The part that cuts.` },
       { t: 'p', html: `A blade nobody sharpens doesn't rust overnight. It loses the edge slowly, and it goes on looking exactly like a blade. You only find out when it fails to cut what it always cut.` },
-      { t: 'p', html: `Minds work the same way. So do studios.` },
+      { t: 'p', html: `Minds work the same way. So do the things we build.` },
       { t: 'signoff', html: `The mind never<br />loses its <span class="hl">edge</span>.` },
-      { t: 'note', html: `Gume is maintained by <a href="https://www.4real.ventures">4/RL Co.</a> and hosted at <a href="https://gume.club" target="_blank" rel="noopener">gume.club</a>. AGPL-3.0. Fork it.` },
-    ],
-  },
-  {
-    slug: 'the-tool-answered-back',
-    title: 'The tool answered back',
-    dek: 'The 4/RL manifesto',
-    excerpt: 'For seventy thousand years our tools waited for us. Now the tool answers back. The 4/RL manifesto, on what changes when powers that belonged to the gods become engineering, and what we intend to do with them.',
-    author: 'Gabriel Olegário',
-    date: '2026-07-07',
-    dateLabel: 'Jul 2026',
-    cover: '/journal/cover-tool-answered.jpg',
-    coverAlt: 'A figure from behind, facing an arena of streaking machine lights.',
-    coverIcon: '/journal/icons/slash.svg',
-    flagship: true,
-    blocks: [
-      { t: 'p', drop: true, html: `For seventy thousand years, our tools waited for us. The axe extended the arm, the wheel the leg, writing the memory. They stayed inert until a hand moved them. The hammer waited to be swung. The book kept its pages exactly as they were written.` },
-      { t: 'pull', lime: true, html: `Now the tool answers back.` },
-      { t: 'p', html: `This is the ontological leap of our century. Powers that once belonged only to the gods became engineering, and that asks something new of us. Artificial intelligence works like a mirror: it reflects the clarity of whoever holds it. Bring it method and intent and it becomes a lever that moves real work.` },
-      { t: 'pull', html: `4<span class="slash">/</span>RL exists to hold that lever well.` },
-      { t: 'p', html: `We are an independent AI venture studio. We build and operate companies that put artificial intelligence to work on problems that matter, across whatever domain the problem lives in, and we measure what actually changes. Our whole thesis fits in one line: improve the world with AI, <span class="hl">for real</span>.` },
-      { t: 'divider' },
-      { t: 'p', html: `<span class="hl">"For real"</span> is our standard. It means we ship things that genuinely function, we prove the result with evidence, and we bring rigor and taste to every build. The distinction that defines this era belongs to whoever masters the process of reaching an answer, the person who orchestrates the intelligence the way a maestro reads an orchestra. So that is how we build: clear questions, documented method, results anyone can check.` },
-      { t: 'p', html: `The name says it. "4<span class="slash">/</span>RL" reads <span class="hl">for real</span>, <span class="hl">de verdade</span>. The slash carries the whole idea. It is the line every project has to cross, from promise to proof. What we make has to survive that crossing before it ships.` },
-      { t: 'divider' },
-      { t: 'p', html: `Toffler wrote that the illiterate of this century would be the one who cannot learn, unlearn and relearn. We take that literally. We learn in public, we build in the open, and we keep the human in the loop where judgment matters most.` },
-      { t: 'p', html: `From São Paulo to the world. A work in progress.` },
-      { t: 'signoff', html: `4<span class="slash">/</span>RL. Real AI, real impact.` },
+      { t: 'note', html: `Gume is maintained by <a href="https://www.4real.ventures">Gabriel Olegário</a> and hosted at <a href="https://gume.club" target="_blank" rel="noopener">gume.club</a>. AGPL-3.0. Fork it.` },
     ],
   },
 ];

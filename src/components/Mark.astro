@@ -1,0 +1,14 @@
+---
+// Monochromatic personal mark — a rounded square with the "/" slash. Theme-aware
+// and never lime: the square is the strong ink, the slash is the page ground, so
+// it stays high-contrast in light and dark. Replaces the old lime avatar PNG.
+const { size = 32, radius = 22 } = Astro.props;
+---
+<svg class="mark" viewBox="0 0 100 100" width={size} height={size} role="img" aria-label="Gabriel Olegário">
+  <rect width="100" height="100" rx={radius} fill="var(--me-ink-strong)" />
+  <path d="M62 22 H76 L46 78 H32 Z" fill="var(--me-bg)" />
+</svg>
+
+<style>
+  .mark{ display:block; }
+</style>

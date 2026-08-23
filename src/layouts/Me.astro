@@ -1,0 +1,269 @@
+---
+// Light/dark personal layout, macOS-flavoured. One fixed menubar carries the
+// mark + name, a Spotlight-style search trigger, the language switcher and the
+// theme toggle — no more floating, overlapping controls. Type is the system
+// stack (SF on the owner's Mac). No lime anywhere: the accent is Apple blue.
+import '../styles/global.css';
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
+import { getLocale, LOCALE_META, homePath } from '../i18n/index.js';
+import { getMeDict } from '../i18n/me.js';
+import Mark from '../components/Mark.astro';
+
+const locale = getLocale(Astro);
+const t = getMeDict(locale);
+const meta = LOCALE_META[locale] ?? LOCALE_META.en;
+const pageTitle = Astro.props.pageTitle ?? t.meta.title;
+const pageDesc = Astro.props.pageDesc ?? t.meta.desc;
+
+const LANG_ATTR = { en: 'en', pt: 'pt-BR', es: 'es', zh: 'zh-CN', ru: 'ru' };
+const htmlLang = LANG_ATTR[locale] ?? 'en';
+
+const site = 'https://www.4real.ventures';
+const canonicalURL = site + Astro.url.pathname;
+const cfToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+const clarityId = import.meta.env.PUBLIC_CLARITY_ID;
+const gaId = import.meta.env.PUBLIC_GA_ID;
+
+const LOCALES = ['en', 'pt', 'es', 'zh', 'ru'];
+---
+<!doctype html>
+<html lang={htmlLang}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  {import.meta.env.PROD && (
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'self'; object-src 'none'; img-src 'self' data: https://*.clarity.ms https://www.google-analytics.com https://*.google-analytics.com; media-src 'self'; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://www.clarity.ms https://*.clarity.ms https://www.googletagmanager.com; connect-src 'self' https://cloudflareinsights.com https://static.cloudflareinsights.com https://*.clarity.ms https://c.bing.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; manifest-src 'self'; form-action 'self'; upgrade-insecure-requests"
+    />
+  )}
+  <script is:inline>
+    (function(){try{
+      var s=localStorage.getItem('theme');
+      if(s==='dark'||s==='light')document.documentElement.setAttribute('data-theme',s);
+      if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('js');
+    }catch(e){}})();
+  </script>
+  {clarityId && (
+    <script is:inline set:html={`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${clarityId}");`} />
+  )}
+  {gaId && (
+    <>
+      <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+      <script is:inline set:html={`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`} />
+    </>
+  )}
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDesc} />
+  <meta name="theme-color" content="#FBFBFA" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1D1D1F" media="(prefers-color-scheme: dark)" />
+  <link rel="canonical" href={canonicalURL} />
+  {LOCALES.map((l) => (
+    <link rel="alternate" hreflang={LANG_ATTR[l]} href={site + homePath(l)} />
+  ))}
+  <link rel="alternate" hreflang="x-default" href={site + '/'} />
+  <link rel="icon" href={site + '/favicon.ico'} sizes="any" />
+  <link rel="icon" type="image/svg+xml" href={site + '/4rl-favicon.svg'} />
+  <link rel="apple-touch-icon" sizes="180x180" href={site + '/apple-touch-icon-180.png'} />
+  <meta property="og:type" content="profile" />
+  <meta property="og:locale" content={meta.og} />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={pageDesc} />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:image" content={site + '/og-image.png'} />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <style is:global>
+    :root{
+      --font-ui:-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter Variable", system-ui, sans-serif;
+      --me-bg:#FBFBFA;
+      --me-ink:#1D1D1F;
+      --me-ink-strong:#111113;
+      --me-muted:#48484A;
+      --me-faint:#8E8E93;
+      --me-line:#EDEDEA;
+      --me-line-strong:#DEDEDA;
+      --me-hover:#F1F1EF;
+      --me-card:#F2F2F0;
+      --me-accent:#007AFF;         /* Apple systemBlue */
+      --me-bar:rgba(250,250,249,.72);
+    }
+    :root[data-theme="dark"]{
+      --me-bg:#1D1D1F;
+      --me-ink:#E8E8ED;
+      --me-ink-strong:#F5F5F7;
+      --me-muted:#AEAEB2;
+      --me-faint:#8E8E93;
+      --me-line:#2A2A2C;
+      --me-line-strong:#3A3A3C;
+      --me-hover:#262628;
+      --me-card:#28282A;
+      --me-accent:#0A84FF;         /* Apple systemBlue (dark) */
+      --me-bar:rgba(29,29,31,.72);
+    }
+    @media (prefers-color-scheme: dark){
+      :root:not([data-theme="light"]){
+        --me-bg:#1D1D1F;
+        --me-ink:#E8E8ED;
+        --me-ink-strong:#F5F5F7;
+        --me-muted:#AEAEB2;
+        --me-faint:#8E8E93;
+        --me-line:#2A2A2C;
+        --me-line-strong:#3A3A3C;
+        --me-hover:#262628;
+        --me-card:#28282A;
+        --me-accent:#0A84FF;
+        --me-bar:rgba(29,29,31,.72);
+      }
+    }
+    body.me-body{
+      background:var(--me-bg);
+      color:var(--me-ink);
+      font-family:var(--font-ui);
+      -webkit-font-smoothing:antialiased;
+      transition:background .3s ease, color .3s ease;
+    }
+    body.me-body ::selection{ background:var(--me-accent); color:#fff; }
+    .me-body mark{ background:var(--me-accent); color:#fff; padding:0 .18em; border-radius:4px; }
+    .me-body .bio a{ color:var(--me-ink-strong); text-decoration:underline; text-underline-offset:2px; text-decoration-color:var(--me-line-strong); }
+    .me-body .bio a:hover{ text-decoration-color:var(--me-ink-strong); }
+    .me-body .callout em{ font-style:italic; }
+  </style>
+</head>
+<body class="me-body">
+  <header class="menubar">
+    <a class="menubar__id" href={homePath(locale)} aria-label="Gabriel Olegário">
+      <Mark size={22} radius={5} />
+      <span class="menubar__name">Gabriel Olegário</span>
+    </a>
+
+    <button class="mb-search" id="mbSearch" type="button" aria-label={t.ui.search}>
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 4a7 7 0 1 0 4.2 12.6l4.1 4.1 1.4-1.4-4.1-4.1A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/></svg>
+      <span class="mb-search__t">{t.ui.search}</span>
+      <kbd class="mb-search__k">⌘K</kbd>
+    </button>
+
+    <div class="menubar__ctrl">
+      <details class="lang">
+        <summary aria-label={t.ui.lang}>{meta.code} <span class="lang__caret" aria-hidden="true">▾</span></summary>
+        <ul class="lang__menu">
+          {LOCALES.map((l) => (
+            <li><a href={homePath(l)} aria-current={l === locale ? 'true' : undefined}>{LOCALE_META[l].name}</a></li>
+          ))}
+        </ul>
+      </details>
+      <button id="themeBtn" class="tbtn" type="button" aria-label={t.ui.theme}>
+        <svg class="tbtn__sun" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0-13v2m0 14v2m8-9h-2M6 12H4m13.66 5.66-1.42-1.42M7.76 7.76 6.34 6.34m11.32 0-1.42 1.42M7.76 16.24l-1.42 1.42" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="tbtn__moon" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <slot />
+
+  {cfToken && (
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={`{"token": "${cfToken}"}`}></script>
+  )}
+  <Analytics />
+  <SpeedInsights />
+
+  <style>
+    .menubar{
+      position:fixed; top:0; left:0; right:0; z-index:60; height:46px;
+      display:flex; align-items:center; gap:14px;
+      padding:0 clamp(12px,3vw,22px);
+      background:var(--me-bar);
+      -webkit-backdrop-filter:saturate(1.6) blur(16px); backdrop-filter:saturate(1.6) blur(16px);
+      border-bottom:1px solid var(--me-line);
+    }
+    .menubar__id{ display:flex; align-items:center; gap:9px; flex:0 0 auto; }
+    .menubar__name{ font-family:var(--font-ui); font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--me-ink-strong); }
+
+    .mb-search{
+      margin:0 auto; display:flex; align-items:center; gap:8px;
+      height:30px; padding:0 10px 0 11px; min-width:min(300px,40vw);
+      border-radius:8px; cursor:pointer;
+      background:var(--me-card); border:1px solid var(--me-line-strong);
+      color:var(--me-faint); transition:border-color .16s ease, background .16s ease;
+    }
+    .mb-search:hover{ border-color:var(--me-accent); }
+    .mb-search svg{ fill:currentColor; flex:0 0 auto; }
+    .mb-search__t{ font-family:var(--font-ui); font-size:13px; }
+    .mb-search__k{ margin-left:auto; font-family:var(--font-ui); font-size:11px; color:var(--me-faint); border:1px solid var(--me-line-strong); border-radius:5px; padding:1px 5px; }
+
+    .menubar__ctrl{ display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+
+    .lang{ position:relative; }
+    .lang summary{
+      list-style:none; cursor:pointer; user-select:none;
+      display:inline-flex; align-items:center; gap:5px;
+      height:30px; padding:0 11px; border-radius:8px;
+      background:var(--me-card); border:1px solid var(--me-line-strong); color:var(--me-muted);
+      font-family:var(--font-ui); font-size:12px; letter-spacing:.02em;
+    }
+    .lang summary::-webkit-details-marker{ display:none; }
+    .lang summary:hover{ color:var(--me-ink); border-color:var(--me-accent); }
+    .lang__caret{ font-size:9px; opacity:.7; }
+    .lang__menu{
+      position:absolute; top:38px; right:0; min-width:150px; list-style:none;
+      background:var(--me-bg); border:1px solid var(--me-line-strong);
+      border-radius:12px; padding:6px; box-shadow:0 12px 32px rgba(0,0,0,.16);
+    }
+    .lang__menu a{ display:block; padding:8px 10px; border-radius:8px; color:var(--me-muted); font-size:14px; }
+    .lang__menu a:hover{ background:var(--me-hover); color:var(--me-ink); }
+    .lang__menu a[aria-current="true"]{ color:var(--me-ink-strong); font-weight:600; }
+
+    .tbtn{
+      display:grid; place-items:center; width:30px; height:30px; border-radius:8px; cursor:pointer;
+      background:var(--me-card); border:1px solid var(--me-line-strong); color:var(--me-muted);
+      transition:color .16s ease, border-color .16s ease;
+    }
+    .tbtn:hover{ color:var(--me-ink); border-color:var(--me-accent); }
+    .tbtn__moon{ display:none; }
+    :root[data-theme="dark"] .tbtn__sun{ display:none; }
+    :root[data-theme="dark"] .tbtn__moon{ display:block; }
+    @media (prefers-color-scheme: dark){
+      :root:not([data-theme="light"]) .tbtn__sun{ display:none; }
+      :root:not([data-theme="light"]) .tbtn__moon{ display:block; }
+    }
+
+    @media (max-width:640px){
+      .mb-search__t, .mb-search__k{ display:none; }
+      .mb-search{ min-width:0; width:34px; padding:0; justify-content:center; }
+    }
+  </style>
+
+  <script>
+    const btn = document.getElementById('themeBtn');
+    btn?.addEventListener('click', () => {
+      const root = document.documentElement;
+      const stored = root.getAttribute('data-theme');
+      const effective = stored || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      const next = effective === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+    document.addEventListener('click', (e) => {
+      const d = document.querySelector('.lang');
+      if (d && d.open && !d.contains(e.target)) d.open = false;
+    });
+    document.getElementById('mbSearch')?.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('spotlight:open'));
+    });
+
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const items = Array.from(document.querySelectorAll('.reveal'));
+    if (reduce || !('IntersectionObserver' in window)) {
+      items.forEach((el) => el.classList.add('in'));
+    } else {
+      const io = new IntersectionObserver((es) => {
+        es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { rootMargin: '0px 0px -8% 0px' });
+      items.forEach((el) => io.observe(el));
+      setTimeout(() => items.forEach((el) => el.classList.add('in')), 1200);
+    }
+  </script>
+</body>
+</html>

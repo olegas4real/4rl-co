@@ -1,6 +1,9 @@
 ---
-import Base from '../../layouts/Base.astro';
-import Nav from '../../components/Nav.astro';
+// Article page, in the personal aesthetic (Me layout, --me-* tokens, macOS
+// type). Root route = PT; localized copies live under [lang]/journal/[slug].
+// Body/figures/reading-time/share logic is preserved from the studio version;
+// only the chrome and styling changed.
+import Me from '../../layouts/Me.astro';
 import { Image } from 'astro:assets';
 import { articles } from '../../data/journal.js';
 import { getLocale, homePath } from '../../i18n/index.js';
@@ -10,9 +13,6 @@ import { postBlocks } from '../../i18n/posts.js';
 const locale = getLocale(Astro);
 const P = getPages(locale);
 
-// Figures are imported here, not in the data file, so astro:assets can optimise
-// them. A block references one by key; an unknown key renders nothing rather
-// than a broken image.
 import gumeEstante from '../../assets/journal/gume-estante.png';
 import gumeContribuidores from '../../assets/journal/gume-contribuidores.png';
 import gumeOQueFalta from '../../assets/journal/gume-o-que-falta.png';
@@ -26,21 +26,12 @@ export function getStaticPaths() {
   return articles.map((a) => ({ params: { slug: a.slug }, props: { article: a } }));
 }
 const { article } = Astro.props;
-// Localized title, dek and excerpt; the BODY stays in its original English —
-// long-form gets translated as reviewed batches, and the header says so in
-// the reader's language (P.chrome.origNote).
 const jp = P.journalPosts[article.slug] ?? {};
 const artTitle = jp.title ?? article.title;
 const artDek = jp.dek ?? article.dek;
-// Fully translated bodies live in posts.js; a locale without one falls back
-// to the English blocks with the origin note (which, with all four shipped,
-// is now a safety net rather than a state).
 const blocks = postBlocks[locale]?.[article.slug] ?? article.blocks;
 const translated = Boolean(postBlocks[locale]?.[article.slug]) || locale === 'en';
 
-// auto reading time (~200 wpm). Counts every block that carries prose, so a
-// long article stops being reported as a short one just because its words sit
-// in headings and lists rather than paragraphs.
 const words = blocks
   .flatMap((b) => [b.html, b.caption, ...(b.items || [])])
   .filter(Boolean)
@@ -50,263 +41,172 @@ const words = blocks
   .filter(Boolean).length;
 const read = Math.max(1, Math.round(words / 200)) + ' min';
 
-// share links
 const site = 'https://www.4real.ventures';
-const url = `${site}/journal/${article.slug}/`;
+const url = `${site}${homePath(locale)}journal/${article.slug}/`.replace('//journal', '/journal');
 const e = encodeURIComponent;
 const shareX = `https://twitter.com/intent/tweet?text=${e(artTitle)}&url=${e(url)}`;
 const shareLI = `https://www.linkedin.com/sharing/share-offsite/?url=${e(url)}`;
 const shareMail = `mailto:?subject=${e(artTitle)}&body=${e(url)}`;
 
-// Article structured data (rich results / better indexing)
-const articleSchema = {
+const schema = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   headline: article.title,
   description: article.dek,
   datePublished: article.date,
   dateModified: article.date,
-  author: { '@type': 'Person', name: article.author },
-  publisher: {
-    '@type': 'Organization',
-    name: '4/RL Co.',
-    logo: { '@type': 'ImageObject', url: `${site}/favicon-512.png` },
-  },
+  author: { '@type': 'Person', name: 'Gabriel Olegário' },
+  publisher: { '@type': 'Person', name: 'Gabriel Olegário' },
   image: `${site}/og-image.png`,
   mainEntityOfPage: { '@type': 'WebPage', '@id': url },
   url,
 };
 ---
-<Base title={`${artTitle} · 4/RL Co. Journal`} description={artDek} jsonLd={articleSchema}>
-  <Nav />
+<Me pageTitle={`${artTitle} · Gabriel Olegário`} pageDesc={artDek}>
   <div class="art-progress" id="artProgress" aria-hidden="true"></div>
 
-  <main class="art">
-    <div class="wrap">
-      <header class="art__head">
-        <p class="mono art__kicker reveal">Journal <span class="slash">/</span> {article.kicker ?? 'Manifesto'}</p>
-        <h1 class="art__title display reveal" data-d="1">{artTitle}</h1>
-        <p class="art__dek reveal" data-d="1">{artDek}</p>
-        {!translated && <p class="art__orig mono reveal" data-d="2">{P.chrome.origNote}</p>}
-        <div class="art__byline mono reveal" data-d="2">
-          <span class="art__by-name">{article.author}</span>
-          <span class="art__by-date">{article.dateLabel} · {read}</span>
-        </div>
-      </header>
+  <article class="art">
+    <a class="art__back" href={homePath(locale)}><span aria-hidden="true">←</span> Gabriel Olegário</a>
 
-      <div class="art__content">
-        <aside class="art__aside reveal">
-          <p class="mono art__aside-label">Share</p>
-          <nav class="mono art__share">
-            <a href={shareX} target="_blank" rel="noopener">X</a>
-            <a href={shareLI} target="_blank" rel="noopener">LinkedIn</a>
-            <a href={shareMail}>Email</a>
-          </nav>
-        </aside>
-
-        <article class="art__body">
-          {blocks.map((b) =>
-            b.t === 'p' ? (
-              <p class={'art__p reveal' + (b.drop ? ' has-drop' : '')} set:html={b.html} />
-            ) : b.t === 'h2' ? (
-              <h2 class="art__h2 display reveal" id={b.id} set:html={b.html} />
-            ) : b.t === 'pull' ? (
-              <p class={'art__pull display reveal' + (b.lime ? ' is-lime' : '')} set:html={b.html} />
-            ) : b.t === 'list' ? (
-              <ul class="art__list reveal">
-                {b.items.map((it) => (
-                  <li class="art__li"><span class="art__li-mark slash" aria-hidden="true">/</span><span set:html={it} /></li>
-                ))}
-              </ul>
-            ) : b.t === 'figure' && FIGURES[b.img] ? (
-              /* Figures break the 700px measure on purpose: these are wide
-                 product shots and the covers are the whole argument. */
-              <figure class="art__fig reveal">
-                {/* .grain wraps the image only: on the <figure> it would lay the
-                    speckle over the caption text too. */}
-                <span class="art__fig-media">
-                  <Image
-                    class="art__fig-img"
-                    src={FIGURES[b.img]}
-                    alt={b.alt}
-                    widths={[760, 1180, 1680]}
-                    sizes="(max-width: 860px) 100vw, (max-width: 1380px) 92vw, 1180px"
-                    format="webp"
-                    quality={74}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </span>
-                {b.caption && <figcaption class="art__fig-cap mono" set:html={b.caption} />}
-              </figure>
-            ) : b.t === 'links' ? (
-              <div class="art__links reveal">
-                {b.items.map((l) => (
-                  <a class="art__link" href={l.href} target="_blank" rel="noopener">
-                    <span class="art__link-label mono">{l.label}</span>
-                    <span class="art__link-val">{l.value}</span>
-                    <span class="arr art__link-arr" aria-hidden="true">↗</span>
-                  </a>
-                ))}
-              </div>
-            ) : b.t === 'note' ? (
-              <p class="art__note reveal" set:html={b.html} />
-            ) : b.t === 'divider' ? (
-              <div class="art__div reveal" aria-hidden="true"><span class="slash">/</span></div>
-            ) : b.t === 'signoff' ? (
-              <p class="art__signoff display reveal" set:html={b.html} />
-            ) : null
-          )}
-        </article>
+    <header class="art__head">
+      {article.kicker && <p class="art__kicker">{article.kicker}</p>}
+      <h1 class="art__title">{artTitle}</h1>
+      <p class="art__dek">{artDek}</p>
+      {!translated && <p class="art__orig">{P.chrome.origNote}</p>}
+      <div class="art__byline">
+        <span>{article.author}</span>
+        <span class="art__dot" aria-hidden="true">·</span>
+        <span>{article.dateLabel}</span>
+        <span class="art__dot" aria-hidden="true">·</span>
+        <span>{read}</span>
       </div>
+    </header>
 
-      <footer class="art__foot reveal">
-        <a class="mono art__back" href="/journal">← Journal</a>
-        <img class="art__stamp" src="/4rl-mark.svg" alt="4/RL Co. logo" width="20" height="20" />
-      </footer>
+    {article.cover && (
+      <img class="art__cover" src={article.cover} alt={article.coverAlt ?? ''} loading="eager" />
+    )}
+
+    <div class="art__body">
+      {blocks.map((b) =>
+        b.t === 'p' ? (
+          <p class={'art__p' + (b.drop ? ' has-drop' : '')} set:html={b.html} />
+        ) : b.t === 'h2' ? (
+          <h2 class="art__h2" id={b.id} set:html={b.html} />
+        ) : b.t === 'pull' ? (
+          <p class={'art__pull' + (b.lime ? ' is-accent' : '')} set:html={b.html} />
+        ) : b.t === 'list' ? (
+          <ul class="art__list">
+            {b.items.map((it) => (
+              <li class="art__li"><span set:html={it} /></li>
+            ))}
+          </ul>
+        ) : b.t === 'figure' && FIGURES[b.img] ? (
+          <figure class="art__fig">
+            <Image
+              class="art__fig-img"
+              src={FIGURES[b.img]}
+              alt={b.alt}
+              widths={[720, 1180]}
+              sizes="(max-width: 800px) 100vw, 720px"
+              format="webp"
+              quality={74}
+              loading="lazy"
+              decoding="async"
+            />
+            {b.caption && <figcaption class="art__fig-cap" set:html={b.caption} />}
+          </figure>
+        ) : b.t === 'links' ? (
+          <div class="art__links">
+            {b.items.map((l) => (
+              <a class="art__link" href={l.href} target="_blank" rel="noopener">
+                <span class="art__link-label">{l.label}</span>
+                <span class="art__link-val">{l.value}</span>
+                <span class="art__link-arr" aria-hidden="true">↗</span>
+              </a>
+            ))}
+          </div>
+        ) : b.t === 'note' ? (
+          <p class="art__note" set:html={b.html} />
+        ) : b.t === 'divider' ? (
+          <div class="art__div" aria-hidden="true"><span>/</span></div>
+        ) : b.t === 'signoff' ? (
+          <p class="art__signoff" set:html={b.html} />
+        ) : null
+      )}
     </div>
-  </main>
-</Base>
+
+    <footer class="art__foot">
+      <a class="art__back" href={homePath(locale)}><span aria-hidden="true">←</span> Gabriel Olegário</a>
+      <nav class="art__share" aria-label="Share">
+        <a href={shareX} target="_blank" rel="noopener">X</a>
+        <a href={shareLI} target="_blank" rel="noopener">LinkedIn</a>
+        <a href={shareMail}>Email</a>
+      </nav>
+    </footer>
+  </article>
+
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
+</Me>
 
 <style>
-  .art-progress{ position:fixed; top:0; left:0; height:3px; width:0; background:var(--accent); z-index:200; transition:width .1s linear; }
+  .art-progress{ position:fixed; top:0; left:0; height:3px; width:0; background:var(--me-accent); z-index:70; transition:width .1s linear; }
 
-  .art{ padding-bottom:16vh; }
+  .art{ max-width:720px; margin:0 auto; padding:calc(46px + clamp(24px,5vh,52px)) clamp(20px,5vw,32px) 110px; }
 
-  /* full-viewport R/GA-style article header */
-  .art__head{
-    min-height:86svh; display:flex; flex-direction:column;
-    padding-top:clamp(100px,16vh,190px); padding-bottom:clamp(24px,4vh,48px);
-  }
-  .art__kicker{ margin-bottom:clamp(20px,4vh,44px); }
-  .art__title{ text-transform:uppercase; font-size:clamp(46px,10.5vw,148px); letter-spacing:-.05em; line-height:.9; }
-  .art__dek{ margin-top:22px; color:var(--ink-muted); font-size:clamp(16px,1.7vw,21px); max-width:44ch; }
-  .art__orig{ margin-top:14px; color:var(--ink-muted); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
-  .art__byline{
-    margin-top:auto; display:flex; align-items:flex-end; justify-content:space-between;
-    gap:16px 32px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:24px;
-  }
-  .art__by-name{ color:var(--ink); }
-  .art__by-date{ color:var(--ink-muted); }
+  .art__back{ display:inline-block; font-family:var(--font-ui); font-size:13px; font-weight:600; color:var(--me-muted); }
+  .art__back:hover{ color:var(--me-ink-strong); }
 
-  /* two-column body: sticky share rail (left) + text column (right).
-     --measure is the text column, and the figure breakout below is derived from
-     it, so the two can never drift apart. 860px at this size is ~70 characters,
-     which is the top of the comfortable range and still leaves the long article
-     from feeling like a column pressed into the middle of a wide screen. */
-  .art__content{
-    --measure:860px;
-    display:grid; grid-template-columns:180px minmax(0, var(--measure));
-    column-gap:clamp(28px,6vw,96px);
-    margin-top:clamp(56px,8vh,100px);
-  }
-  .art__aside{ position:sticky; top:120px; align-self:start; }
-  .art__aside-label{ color:var(--ink-muted); margin-bottom:16px; }
-  .art__share{ display:flex; flex-direction:column; gap:11px; }
-  .art__share a{ color:var(--ink-muted); transition:color .25s var(--ease); }
-  .art__share a:hover{ color:var(--accent); }
+  .art__head{ margin-top:clamp(24px,5vh,44px); }
+  .art__kicker{ font-family:var(--font-ui); font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--me-accent); }
+  .art__title{ margin-top:12px; font-family:var(--font-ui); font-size:clamp(30px,5vw,46px); font-weight:700; letter-spacing:-.025em; line-height:1.05; color:var(--me-ink-strong); }
+  .art__dek{ margin-top:16px; font-size:clamp(17px,2vw,20px); line-height:1.5; color:var(--me-muted); max-width:52ch; }
+  .art__orig{ margin-top:14px; font-family:var(--font-ui); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--me-faint); }
+  .art__byline{ margin-top:20px; display:flex; align-items:center; gap:8px; font-family:var(--font-ui); font-size:13px; color:var(--me-faint); }
+  .art__byline span:first-child{ color:var(--me-ink); font-weight:600; }
 
-  .art__body{ max-width:var(--measure); }
-  .art__p{ font-size:clamp(19px,1.6vw,25px); line-height:1.6; color:var(--ink); margin:0 0 1.4em; }
-  .art__p.has-drop::first-letter{
-    font-family:var(--font-display); font-weight:700; color:var(--accent);
-    font-size:3.2em; line-height:.72; float:left; margin:.06em .12em 0 0;
-  }
-  /* Links inside prose: underlined, because in a wall of text colour alone is
-     not a strong enough signal and it would spend the lime on every mention. */
-  .art__p :global(a), .art__note :global(a), .art__li :global(a){
-    color:var(--ink); text-decoration:underline;
-    text-decoration-color:var(--line); text-underline-offset:.22em; text-decoration-thickness:1px;
-    transition:color .25s var(--ease), text-decoration-color .25s var(--ease);
-  }
-  .art__p :global(a):hover, .art__note :global(a):hover, .art__li :global(a):hover{
-    color:var(--accent); text-decoration-color:var(--accent);
-  }
-  .art__p :global(strong), .art__li :global(strong){ color:var(--ink); font-weight:650; }
+  .art__cover{ width:100%; height:auto; margin:clamp(28px,5vh,44px) 0 0; border-radius:14px; border:1px solid var(--me-line); display:block; }
 
-  /* Section headings. Sized well under the h1 so the header still owns the page. */
-  .art__h2{
-    text-transform:uppercase; font-weight:700;
-    font-size:clamp(24px,2.7vw,38px); letter-spacing:-.03em; line-height:1.06;
-    margin:clamp(52px,7vh,84px) 0 clamp(20px,2.6vh,30px);
-    max-width:20ch;
-  }
+  .art__body{ margin-top:clamp(28px,5vh,44px); }
+  .art__p{ font-size:17.5px; line-height:1.72; color:var(--me-ink); margin:0 0 1.3em; }
+  .art__p.has-drop::first-letter{ font-family:var(--font-ui); font-weight:800; color:var(--me-accent); font-size:3em; line-height:.72; float:left; margin:.06em .12em 0 0; }
 
-  .art__pull{
-    font-size:clamp(28px,3.8vw,52px); font-weight:700; letter-spacing:-.03em; line-height:1.04;
-    color:var(--ink); margin:clamp(40px,6vh,72px) 0;
-  }
-  .art__pull.is-lime{ color:var(--accent); }
+  .art__body :global(a){ color:var(--me-ink-strong); text-decoration:underline; text-decoration-color:var(--me-line-strong); text-underline-offset:.2em; }
+  .art__body :global(a):hover{ color:var(--me-accent); text-decoration-color:var(--me-accent); }
+  .art__body :global(strong){ color:var(--me-ink-strong); font-weight:650; }
+  .art__body :global(.hl){ color:var(--me-accent); font-weight:600; }
+  .art__body :global(.slash){ color:var(--me-accent); font-weight:700; }
 
-  /* Lists: the "/" motif replaces the bullet. */
-  .art__list{ list-style:none; margin:0 0 1.6em; padding:0; }
-  .art__li{
-    position:relative; padding-left:1.7em;
-    font-size:clamp(18px,1.5vw,23px); line-height:1.58; color:var(--ink-muted);
-    margin-bottom:1.05em;
-  }
-  .art__li-mark{ position:absolute; left:0; top:.06em; font-size:1em; }
+  .art__h2{ margin:clamp(40px,6vh,64px) 0 clamp(14px,2vh,22px); font-family:var(--font-ui); font-size:clamp(21px,2.6vw,28px); font-weight:700; letter-spacing:-.02em; line-height:1.15; color:var(--me-ink-strong); }
 
-  /* Figures break the measure: they run wider than the text column and centre
-     on it. Product shots are the receipt for the sentence above them. */
-  .art__fig{
-    --bleed:min(1180px, calc(100vw - var(--pad) * 2));
-    margin:clamp(44px,6vh,76px) 0;
-    width:var(--bleed);
-    /* centre the wider figure on the text column, whatever --measure is */
-    margin-left:calc((var(--measure) - var(--bleed)) / 2);
-  }
-  /* the media box clips both the image and the grain to the same rounded frame */
-  .art__fig-media{
-    display:block; overflow:hidden;
-    border:1px solid var(--line); border-radius:4px; background:var(--bg-elev);
-  }
-  .art__fig-img{ width:100%; height:auto; display:block; }
-  .art__fig-cap{ margin-top:14px; color:var(--ink-muted); text-transform:none; letter-spacing:.06em; }
+  .art__pull{ margin:clamp(32px,5vh,52px) 0; font-family:var(--font-ui); font-size:clamp(22px,3vw,30px); font-weight:700; letter-spacing:-.02em; line-height:1.18; color:var(--me-ink-strong); }
+  .art__pull.is-accent{ color:var(--me-accent); }
 
-  /* The three links, as rows rather than inline text: this is the ask. */
-  .art__links{ margin:clamp(36px,5vh,60px) 0; border-top:1px solid var(--line); }
-  .art__link{
-    display:grid; grid-template-columns:120px 1fr auto; align-items:baseline;
-    gap:clamp(12px,2vw,28px); padding:20px 0; border-bottom:1px solid var(--line);
-    transition:padding-left .35s var(--ease);
-  }
-  .art__link:hover{ padding-left:12px; }
-  .art__link-label{ color:var(--ink-muted); }
-  .art__link-val{
-    font-family:var(--font-mono); font-size:clamp(14px,1.4vw,18px);
-    color:var(--ink); overflow-wrap:anywhere; transition:color .25s var(--ease);
-  }
-  .art__link:hover .art__link-val{ color:var(--accent); }
-  .art__link-arr{ color:var(--accent); }
+  .art__list{ list-style:none; margin:0 0 1.5em; padding:0; }
+  .art__li{ position:relative; padding-left:22px; font-size:16.5px; line-height:1.6; color:var(--me-muted); margin-bottom:.9em; }
+  .art__li::before{ content:''; position:absolute; left:4px; top:.62em; width:6px; height:6px; border-radius:50%; background:var(--me-accent); }
 
-  .art__note{
-    margin-top:clamp(36px,5vh,56px); padding-top:26px; border-top:1px solid var(--line);
-    color:var(--ink-muted); font-size:clamp(14px,1.2vw,16px); font-style:italic;
-  }
-  .art__div{ margin:clamp(32px,5vh,56px) 0; }
-  .art__div .slash{ font-size:30px; }
-  .art__signoff{
-    margin:clamp(48px,8vh,92px) 0 0; text-transform:uppercase;
-    font-size:clamp(30px,5vw,68px); font-weight:800; letter-spacing:-.04em; line-height:.98;
-  }
+  .art__fig{ margin:clamp(32px,5vh,52px) 0; }
+  .art__fig-img{ width:100%; height:auto; display:block; border-radius:12px; border:1px solid var(--me-line); }
+  .art__fig-cap{ margin-top:12px; font-family:var(--font-ui); font-size:13px; color:var(--me-faint); }
 
-  .art__foot{
-    max-width:1020px; margin:clamp(64px,9vh,110px) 0 0; padding-top:26px; border-top:1px solid var(--line);
-    display:flex; align-items:center; gap:20px;
-  }
-  .art__back{ color:var(--ink-muted); }
-  .art__back:hover{ color:var(--accent); }
-  .art__stamp{ width:20px; height:20px; margin-left:auto; }
+  .art__links{ margin:clamp(28px,4vh,44px) 0; border-top:1px solid var(--me-line); }
+  .art__link{ display:grid; grid-template-columns:120px 1fr auto; align-items:baseline; gap:16px; padding:16px 0; border-bottom:1px solid var(--me-line); }
+  .art__link:hover .art__link-val{ color:var(--me-accent); }
+  .art__link-label{ font-family:var(--font-ui); font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--me-faint); }
+  .art__link-val{ font-family:var(--font-ui); font-size:15px; color:var(--me-ink); overflow-wrap:anywhere; }
+  .art__link-arr{ color:var(--me-accent); }
 
-  @media (max-width:860px){
-    .art__content{ grid-template-columns:1fr; row-gap:28px; }
-    .art__aside{ position:static; }
-    .art__share{ flex-direction:row; gap:22px; }
-    .art__body, .art__foot{ max-width:none; }
-    .art__p.has-drop::first-letter{ font-size:2.9em; }
-    /* the measure is the viewport here, so there is nothing left to break out of */
-    .art__fig{ width:100%; margin-left:0; }
+  .art__note{ margin-top:clamp(32px,5vh,48px); padding-top:22px; border-top:1px solid var(--me-line); font-size:14.5px; font-style:italic; color:var(--me-muted); }
+  .art__div{ margin:clamp(30px,5vh,48px) 0; text-align:center; }
+  .art__div span{ color:var(--me-accent); font-weight:700; font-size:26px; }
+  .art__signoff{ margin:clamp(40px,7vh,80px) 0 0; font-family:var(--font-ui); font-size:clamp(26px,4vw,42px); font-weight:800; letter-spacing:-.03em; line-height:1.05; color:var(--me-ink-strong); }
+
+  .art__foot{ margin-top:clamp(48px,8vh,90px); padding-top:22px; border-top:1px solid var(--me-line); display:flex; align-items:center; justify-content:space-between; gap:20px; }
+  .art__share{ display:flex; gap:18px; font-family:var(--font-ui); font-size:13px; }
+  .art__share a{ color:var(--me-muted); }
+  .art__share a:hover{ color:var(--me-accent); }
+
+  @media (max-width:560px){
     .art__link{ grid-template-columns:1fr auto; }
     .art__link-label{ display:none; }
   }

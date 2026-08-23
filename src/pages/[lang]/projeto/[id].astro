@@ -1,0 +1,14 @@
+---
+// Localized project pages: /en/projeto/[id], /es/…, /zh/…, /ru/. Forwards to the
+// root route component, which self-localizes from Astro.currentLocale.
+import Page from '../../projeto/[id].astro';
+
+export function getStaticPaths() {
+  const ids = ['smart-social', 'gume', 'labepi', 'altman'];
+  return ['en', 'es', 'zh', 'ru'].flatMap((lang) =>
+    ids.map((id) => ({ params: { lang, id }, props: { id } }))
+  );
+}
+const { id } = Astro.props;
+---
+<Page id={id} />
