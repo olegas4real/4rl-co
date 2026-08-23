@@ -118,6 +118,9 @@ const LOCALES = ['en', 'pt', 'es', 'zh', 'ru'];
         --me-bar:rgba(29,29,31,.72);
       }
     }
+    /* html carries the overscroll/rubber-band colour on mobile — keep it on the
+       paper, not the studio dark that global.css sets. */
+    html{ background:var(--me-bg); }
     body.me-body{
       background:var(--me-bg);
       color:var(--me-ink);
@@ -231,7 +234,11 @@ const LOCALES = ['en', 'pt', 'es', 'zh', 'ru'];
 
     @media (max-width:640px){
       .mb-search__t, .mb-search__k{ display:none; }
-      .mb-search{ min-width:0; width:34px; padding:0; justify-content:center; }
+      .mb-search{ min-width:0; width:34px; padding:0; justify-content:center; margin-left:auto; }
+    }
+    @media (max-width:430px){
+      .menubar{ gap:10px; }
+      .menubar__name{ display:none; }
     }
   </style>
 

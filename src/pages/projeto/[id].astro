@@ -96,4 +96,11 @@ const others = ['smart-social', 'gume', 'labepi', 'altman']
   .pp__more{ display:flex; flex-wrap:wrap; gap:22px; margin-top:56px; padding-top:24px; border-top:1px solid var(--me-line); }
   .pp__more-link{ font-family:var(--font-ui); font-size:15px; font-weight:600; color:var(--me-muted); }
   .pp__more-link:hover{ color:var(--me-ink-strong); }
+
+  @media (max-width:520px){
+    .pp__hero{ flex-direction:column; align-items:flex-start; gap:14px; }
+    .pp__ico{ width:78px; }
+    .pp__links{ gap:10px; }
+    .pp__link{ flex:1 1 auto; text-align:center; }
+  }
 </style>
