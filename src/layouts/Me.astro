@@ -87,7 +87,9 @@ const LOCALES = ['en', 'pt', 'es', 'zh', 'ru'];
       --me-line-strong:#DEDEDA;
       --me-hover:#F1F1EF;
       --me-card:#F2F2F0;
-      --me-accent:#007AFF;         /* Apple systemBlue */
+      --me-accent:#8839ef;         /* Catppuccin Latte Mauve (lilac) */
+      --me-accent-2:#e64553;       /* Catppuccin Latte Maroon (salmon) */
+      --me-on-accent:#ffffff;      /* text on an accent fill */
       --me-bar:rgba(250,250,249,.72);
     }
     :root[data-theme="dark"]{
@@ -100,7 +102,9 @@ const LOCALES = ['en', 'pt', 'es', 'zh', 'ru'];
       --me-line-strong:#3A3A3C;
       --me-hover:#262628;
       --me-card:#28282A;
-      --me-accent:#0A84FF;         /* Apple systemBlue (dark) */
+      --me-accent:#cba6f7;         /* Catppuccin Mocha Mauve (lilac) */
+      --me-accent-2:#eba0ac;       /* Catppuccin Mocha Maroon (salmon) */
+      --me-on-accent:#1e1e2e;      /* Catppuccin Mocha Base */
       --me-bar:rgba(29,29,31,.72);
     }
     @media (prefers-color-scheme: dark){
@@ -114,7 +118,9 @@ const LOCALES = ['en', 'pt', 'es', 'zh', 'ru'];
         --me-line-strong:#3A3A3C;
         --me-hover:#262628;
         --me-card:#28282A;
-        --me-accent:#0A84FF;
+        --me-accent:#cba6f7;
+        --me-accent-2:#eba0ac;
+        --me-on-accent:#1e1e2e;
         --me-bar:rgba(29,29,31,.72);
       }
     }
@@ -128,8 +134,8 @@ const LOCALES = ['en', 'pt', 'es', 'zh', 'ru'];
       -webkit-font-smoothing:antialiased;
       transition:background .3s ease, color .3s ease;
     }
-    body.me-body ::selection{ background:var(--me-accent); color:#fff; }
-    .me-body mark{ background:var(--me-accent); color:#fff; padding:0 .18em; border-radius:4px; }
+    body.me-body ::selection{ background:var(--me-accent); color:var(--me-on-accent); }
+    .me-body mark{ background:var(--me-accent); color:var(--me-on-accent); padding:0 .18em; border-radius:4px; }
     .me-body .bio a{ color:var(--me-ink-strong); text-decoration:underline; text-underline-offset:2px; text-decoration-color:var(--me-line-strong); }
     .me-body .bio a:hover{ text-decoration-color:var(--me-ink-strong); }
     .me-body .callout em{ font-style:italic; }

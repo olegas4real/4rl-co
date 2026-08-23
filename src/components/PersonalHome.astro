@@ -27,13 +27,14 @@ const writing = articles
 
 // Apple system colours, one per folder.
 const folders = [
-  { id: 'sobre', color: '#007AFF', icon: 'person', name: t.folders.sobre.name, sub: t.folders.sobre.sub },
-  { id: 'smart-social', color: '#AF52DE', icon: 'signal', name: 'Smart Social', sub: t.projects['smart-social'].tag },
-  { id: 'gume', color: '#34C759', icon: 'book', name: 'Gume', sub: t.projects.gume.tag },
-  { id: 'labepi', color: '#30B0C7', icon: 'flask', name: 'LabEpi', sub: t.projects.labepi.tag },
-  { id: 'altman', color: '#FF9500', icon: 'chart', name: 'Altman by LabEpi', sub: t.projects.altman.tag },
-  { id: 'escrita', color: '#FFCC00', icon: 'pen', name: t.folders.escrita.name, sub: t.folders.escrita.sub },
-  { id: 'contato', color: '#FF2D55', icon: 'mail', name: t.folders.contato.name, sub: t.folders.contato.sub },
+  // Catppuccin (Latte) palette, one hue per folder — the Gume family of colours.
+  { id: 'sobre', color: '#1e66f5', icon: 'person', name: t.folders.sobre.name, sub: t.folders.sobre.sub },
+  { id: 'smart-social', color: '#8839ef', icon: 'signal', name: 'Smart Social', sub: t.projects['smart-social'].tag },
+  { id: 'gume', color: '#40a02b', icon: 'book', name: 'Gume', sub: t.projects.gume.tag },
+  { id: 'labepi', color: '#179299', icon: 'flask', name: 'LabEpi', sub: t.projects.labepi.tag },
+  { id: 'altman', color: '#fe640b', icon: 'chart', name: 'Altman by LabEpi', sub: t.projects.altman.tag },
+  { id: 'escrita', color: '#df8e1d', icon: 'pen', name: t.folders.escrita.name, sub: t.folders.escrita.sub },
+  { id: 'contato', color: '#e64553', icon: 'mail', name: t.folders.contato.name, sub: t.folders.contato.sub },
 ];
 const projIds = ['smart-social', 'gume', 'labepi', 'altman'];
 const detailBase = locale === 'pt' ? '' : '/' + locale;
@@ -150,7 +151,10 @@ const detailBase = locale === 'pt' ? '' : '/' + locale;
   .desk__stage{
     flex:1; display:flex; align-items:center; justify-content:center;
     padding:clamp(28px,6vh,72px) clamp(18px,5vw,64px);
-    background:linear-gradient(180deg, color-mix(in srgb, var(--me-ink-strong) 3%, var(--me-bg)), var(--me-bg));
+    background:
+      radial-gradient(90% 70% at 12% 0%, color-mix(in srgb, var(--me-accent) 9%, transparent), transparent 60%),
+      radial-gradient(90% 70% at 92% 0%, color-mix(in srgb, var(--me-accent-2) 8%, transparent), transparent 58%),
+      var(--me-bg);
   }
 
   .grid{
@@ -221,7 +225,7 @@ const detailBase = locale === 'pt' ? '' : '/' + locale;
   .p-about + .p-about{ margin-top:14px; }
   .p-cta{
     display:inline-block; margin-top:22px; font-family:var(--font-ui); font-size:14px; font-weight:600;
-    color:#fff; background:var(--me-accent); padding:9px 16px; border-radius:9px;
+    color:var(--me-on-accent); background:var(--me-accent); padding:9px 16px; border-radius:9px;
   }
   .p-cta:hover{ filter:brightness(1.06); }
 
@@ -247,7 +251,7 @@ const detailBase = locale === 'pt' ? '' : '/' + locale;
     font-family:var(--font-ui); font-size:12px; color:var(--me-faint);
   }
   .desk__hint{ color:var(--me-faint); text-align:center; }
-  .desk__slash{ color:var(--me-accent); font-weight:700; font-size:18px; }
+  .desk__slash{ color:var(--me-accent-2); font-weight:700; font-size:18px; }
   @media (max-width:640px){ .desk__hint{ display:none; } }
 
   /* ---- Spotlight ---- */
@@ -275,8 +279,8 @@ const detailBase = locale === 'pt' ? '' : '/' + locale;
     display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer;
   }
   .spot__list :global(.spot__row[aria-selected="true"]){ background:var(--me-accent); }
-  .spot__list :global(.spot__row[aria-selected="true"] .spot__name){ color:#fff; }
-  .spot__list :global(.spot__row[aria-selected="true"] .spot__sub){ color:rgba(255,255,255,.82); }
+  .spot__list :global(.spot__row[aria-selected="true"] .spot__name){ color:var(--me-on-accent); }
+  .spot__list :global(.spot__row[aria-selected="true"] .spot__sub){ color:color-mix(in srgb, var(--me-on-accent) 74%, transparent); }
   .spot__list :global(.spot__dot){ width:12px; height:12px; border-radius:4px; flex:0 0 auto; }
   .spot__list :global(.spot__name){ font-family:var(--font-ui); font-size:15px; font-weight:600; color:var(--me-ink-strong); }
   .spot__list :global(.spot__sub){ font-family:var(--font-ui); font-size:12px; color:var(--me-faint); margin-left:auto; }
